@@ -1,0 +1,16 @@
+01459256068dc5660867ab56b0046fb5 *DESCRIPTION
+eff5861a206bd13ab611b481d18796de *NAMESPACE
+92e209ba0e0a94e0e564363835f6613e *R/high_dimensional_function_on_function.R
+b51b7c46eda924fa8e3765b46b30c0bb *R/multiple_function_on_function.R
+7a0061d280a3cd320d65222c64a8c3b6 *R/nonlinear_function_on_function.R
+93400c886a270203ab2df25981ab9aea *data/air.RData
+c3866b774fe193ee5b2bb68ab274ac90 *man/air.Rd
+5513bcd9f9bc5587b18f4ea7a40733b0 *man/cv.hd.Rd
+9d751d342350d1602f484f60ff596cf4 *man/cv.nonlinear.Rd
+45e694055b40a50b6421ae8543a43142 *man/cv.sigcom.Rd
+d5fade8271a4b4270a84e9507d6a080c *man/getcoef.hd.Rd
+910d005567c858f98ef85e52d7aa28e3 *man/getcoef.nonlinear.Rd
+69cb3cd44224e83497d5fe1ed10b69f2 *man/getcoef.sigcom.Rd
+ff45066bac5b91c63f60489d6d7efb36 *man/pred.hd.Rd
+87cf0863cfbef5cee2f0e498acbf5dc1 *man/pred.nonlinear.Rd
+1a1b9e65a5e7bb7810183f0b99ddda1f *man/pred.sigcom.Rd
