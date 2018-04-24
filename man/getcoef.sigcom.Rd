@@ -25,7 +25,7 @@ getcoef.sigcom(fit.cv)
 \item{beta }{ a list of length \eqn{p}, the number of functional
   predictors. Its \eqn{i}-th component is a matrix of the estimated
   values of coefficient functions \eqn{\beta_i(s,t)} of functional
-  predictors at the full grid of observaion time points created by arguments \eqn{t.x.list[[i]]} and \eqn{t.y} for \code{\link{cv.sigcom}}. The columns correspond to different observation points for response varible (\eqn{t.y}). }
+  predictors at the full grid of observaion time points created by arguments \code{t.x.list[[i]]} and \code{t.y} for \code{\link{cv.sigcom}}. The columns correspond to different observation points for response varible (\eqn{t.y}). }
 \item{beta.scalar }{the matrix of estimated values of the coefficient
   functions \eqn{\alpha(t)} of scalar predictors, with rows corresponding to different scalar predictors, and columns corresponding to different observation points of the functional response.}
 }

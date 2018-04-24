@@ -18,8 +18,8 @@ getcoef.hd(fit.cv)
 }
 }
 \value{a list containing
- \item{mu }{the vector of estimated values for \eqn{\mu(t)} at \eqn{t.y}, the vector of observation time points for the response function.}
-\item{beta }{ a list of length \eqn{p}, the number of functional predictors. Its \eqn{i}-th element is a matrix of the estimated values of \eqn{\beta_i(s,t)} at the full grid of observaion time points created by arguments \eqn{t.x.list[[i]]} and \eqn{t.y}  for \code{\link{cv.hd}}. }
+ \item{mu }{the vector of estimated values for \eqn{\mu(t)} at \code{t.y}, the vector of observation time points for the response function.}
+\item{beta }{ a list of length \eqn{p}, the number of functional predictors. Its \eqn{i}-th element is a matrix of the estimated values of \eqn{\beta_i(s,t)} at the full grid of observaion time points created by arguments \code{t.x.list[[i]]} and \code{t.y}  for \code{\link{cv.hd}}. }
 }
 %\references{
 %% ~put references to the literature/web site here ~

@@ -1,14 +1,14 @@
 \name{cv.nonlinear}
 \alias{cv.nonlinear}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{cross-validation for nonlinear function-on-function regression
+\title{Cross-validation for nonlinear function-on-function regression
 %%  ~~function to do ... ~~
 }
 \description{This function is used to perform cross-validation and build the final model using signal compression approach for the following nonlinear function-on-function regression model:
 \deqn{Y(t)= \mu(t)+\sum_{i=1}^p\int_{a_i}^{b_i}F_i(X_i(s), s,t)ds+\varepsilon(t)}{Y(t)= \mu(t)+\int_{a_1}^{b_1}F_1(X_1(s), s,t)ds+...+\int_{a_p}^{b_p}F_p(X_p(s), s,t)ds+\epsilon(t),}
-where \eqn{\mu(t)}{\mu(t)} is the intercept function, \eqn{F_i(x,
-  s,t)}{F_i(x,s,t)}, \eqn{1\le i\le p}{1\le i\le p}, are all unspecified
-nonlinear functions of \eqn{x, s, t},  \eqn{X_i(s)}{X_i(s)}, \eqn{1\le i\le p}{1\le i\le p}, are functional predictors, and \eqn{\epsilon(t)}{\epsilon(t)} is the noise function.
+where \eqn{\mu(t)}{\mu(t)} is the intercept function, \eqn{\{F_i(x,
+  s,t),1\le i\le p\}}{{F_i(x,s,t), 1\le i\le p}} are all unspecified
+nonlinear functions of \eqn{x, s, t},  \eqn{\{X_i(s),1\le i\le p\}}{{X_i(s), 1\le i\le p}} are functional predictors, and \eqn{\epsilon(t)}{\epsilon(t)} is the noise function.
 
 In this method, we require that all the sample curves of each functional predictor be observed in a common dense set, but the observation points can be different for different functional predictors. All the sample curves of the functional response are observed in a common dense set.
 
@@ -17,7 +17,7 @@ This method estimates a special decomposition:
 We first estimate \eqn{\{G_{ik}(x,s), 1\le i\le p\}}{{G_{ik}(x,s), 1\le
     i\le p}} for each \eqn{k>0}  by solving a generalized functional
 eigenvalue problem with smoothness tuning parameter \eqn{\lambda} on its
-Sobolev norm, and then estimate \eqn{w_{k}(t), k>0}{w_{k}(t), k>0} by penalized least square with smoothness tuning parameter \eqn{\kappa}.
+Sobolev norm, and then estimate \eqn{\{w_{k}(t), k>0\}}{{w_{k}(t), k>0}} by penalized least square with smoothness tuning parameter \eqn{\kappa}.
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
@@ -109,7 +109,7 @@ print(proc.time()-ptm)
 
 \donttest{
 #########################################
-# example with simulated data and p=3 
+# example with simulated data and p=3
 #########################################
 rm(list=ls())
 ptm <- proc.time()

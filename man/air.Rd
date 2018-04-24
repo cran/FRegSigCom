@@ -18,7 +18,8 @@
 }
 \keyword{datasets}
 \references{
- De Vito, S. etal (2008) Sensors and Actuators B: Chemical, 129: 50-757.\\
+  De Vito, S. etal (2008) Sensors and Actuators B: Chemical, 129: 50-757.
+
  Xin Qi and Ruiyan Luo. (Accepted) Nonlinear function on function additive model with multiple predictor curves. Stistica Sinica.
  }
  \source{ \href{https://archive.ics.uci.edu/ml/datasets/Air+quality}{Data link}}

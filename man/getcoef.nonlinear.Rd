@@ -16,7 +16,7 @@ getcoef.nonlinear(fit.cv, n.x.grid = 100)
   \item{fit.cv }{the object obtained from \code{\link{cv.nonlinear}}.
 %%     ~~Describe \code{fit.cv} here~~
 }
-  \item{n.x.grid }{the number of grid points of \eqn{x}. The estimated \eqn{F_i(x,s,t)} is calculated in a three-dimensional grid of \eqn{(x,s,t)}. The grid points of s and t are the observation points of \eqn{X_i(s)} and \eqn{Y(t)} used in \code{\link{cv.nonlinear}}, respectively. The grid of \eqn{x} includes n.x.grid equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}. Default of  n.x.grid is 100.
+  \item{n.x.grid }{the number of grid points of \eqn{x}. The estimated \eqn{F_i(x,s,t)} is calculated in a three-dimensional grid of \eqn{(x,s,t)}. The grid points of \eqn{s} and \eqn{t} are the observation points of \eqn{X_i(s)} and \eqn{Y(t)} used in \code{\link{cv.nonlinear}}, respectively. The grid of \eqn{x} includes \code{n.x.grid} equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}. Default of  n.x.grid is 100.
 %%     ~~Describe \code{n.x.grid} here~~
 }
 }
@@ -25,8 +25,8 @@ getcoef.nonlinear(fit.cv, n.x.grid = 100)
 %}
 \value{a list containing
  \item{mu }{the vector of estimated values of \eqn{\mu(t)} at the observation points of the response function.}
-\item{F }{ a list of length \eqn{p},  the number of functional predictors. Its \eqn{i}-th element is a three dimensional array with estimated values of \eqn{F_i(x,s,t)} on the three-dimensional grid \eqn{X.grid[[i]]*t.x.list[[i]]*t.y} (see below). }
-\item{X.grid }{a list of length \eqn{p}. Its \eqn{i}-th element is the vector of grid points for \eqn{x} and includes  n.x.grid equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}.  }
+\item{F }{ a list of length \eqn{p},  the number of functional predictors. Its \eqn{i}-th element is a three dimensional array with estimated values of \eqn{F_i(x,s,t)} on the three-dimensional grid \code{X.grid[[i]]*t.x.list[[i]]*t.y} (see below). }
+\item{X.grid }{a list of length \eqn{p}. Its \eqn{i}-th element is the vector of grid points for \eqn{x} and includes  \code{n.x.grid} equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}.  }
 \item{t.x.list}{one of the arguments in \code{\link{cv.nonlinear}}, specifying the list of the vectors of obesrvation points for \eqn{X_i(s)}{X_i(s)}, \eqn{1\le i\le p}{1\le i\le p}. }
 \item{t.y}{one of the arguments in \code{\link{cv.nonlinear}}, specifying the vector of obesrvation points of the response curve \eqn{Y(t)}{Y(t)}.}
 

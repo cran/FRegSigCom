@@ -1,16 +1,16 @@
 \name{cv.hd}
 \alias{cv.hd}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{cross-validation for sparse linear function-on-function regression with a large number of functional predictors
+\title{Cross-validation for sparse linear function-on-function regression with a large number of functional predictors
 %%  ~~function to do ... ~~
 }
 \description{Conduct cross-validation and build the final model for the following function-on-function regression model:
 \deqn{Y(t)= \mu(t)+\sum_{i=1}^p\int_{a_i}^{b_i}X_i(s)\beta_i(s,t)ds+\varepsilon(t)}{Y(t)= \mu(t)+\int X_1(s)\beta_1(s,t)ds+...+\int X_p(s)\beta_p(s,t)ds+\varepsilon(t),}
 where \eqn{\mu(t)}{\mu(t)} is the intercept
-function. \eqn{X_i(s)}{X_i(s)}, \eqn{1\le i\le p}{1\le i\le p}, are
-\eqn{p} functional predictors and \eqn{\beta_i(s,t)}{\beta_i(s,t)},
-\eqn{1\le i\le p}{1\le i\le p}, are corresponding coefficient functions.
-\eqn{\epsilon(t)}{\epsilon(t)} is the noise function. The \eqn{p} can be much larger than the sample size.
+function. The \eqn{\{X_i(s),1\le i\le p\}}{{X_i(s), 1\le i\le p}} are
+\eqn{p} functional predictors and \eqn{\{\beta_i(s,t),1\le i\le p\}}{{\beta_i(s,t),1\le i\le p}}
+ are corresponding coefficient functions.
+The \eqn{\epsilon(t)}{\epsilon(t)} is the noise function. The \eqn{p} can be much larger than the sample size.
 
 We require that all the sample curves of each functional predictor are observed in a common dense set of time points, but the set can be different for different functional predictor. All the sample curves of the response are observed in a common dense set.
 
@@ -72,11 +72,12 @@ cv.hd(X, Y, t.x.list, t.y, K.cv = 5, s.n.basis = 25, t.n.basis = 50,
 \item{opt.eta}{optimal value for \eqn{\eta}, the smoothness parameter for \eqn{\psi_{ik}(s)}{\psi_{ik}(s)}.}
 \item{opt.kappa}{optimal value for \eqn{\kappa}, the smoothness parameter for \eqn{w_k(t)}{w_k(t)}.}
 \item{maxK.ret}{a list for internal use.}
-\item{t.y}{the input t.y.}
+\item{t.y}{the input \code{t.y}.}
 \item{y.params}{a list for internal use.}
 }
-\references{Xin Qi and Ruiyan Luo (2017+) Function-on-Function
-  Regression with thousands of predictive curves.}
+\references{Xin Qi and Ruiyan Luo (2018) Function-on-Function
+  Regression with thousands of predictive curves, Jounal of Multivariate
+  Analysis 163:51-66. \url{https://doi.org/10.1016/j.jmva.2017.10.002}}
 \author{Ruiyan Luo and Xin Qi
 %%  ~~who you are~~
 }
@@ -96,7 +97,7 @@ cv.hd(X, Y, t.x.list, t.y, K.cv = 5, s.n.basis = 25, t.n.basis = 50,
 data(air)
 t.x=seq(0,1,length=24)
 t.y=seq(0,1,length=24)
-air.cv=cv.hd(X=list(air[[2]][1:60,]), Y=air[[1]][1:60,], list(t.x), t.y,
+air.cv=cv.hd(X=list(air[[2]][1:40,]), Y=air[[1]][1:40,], list(t.x), t.y,
              K.cv=2, s.n.basis = 8, t.n.basis = 8)
 air.pred=pred.hd(air.cv, list(air[[2]][1:2,]))
 predict.error=mean((air.pred-air[[1]][1:2,])^2)
@@ -106,7 +107,7 @@ est.coefficient=getcoef.hd(air.cv)
 
 \donttest{
 #########################################
-#example with simulated data and p=1000 
+#example with simulated data and p=1000
 #########################################
 
 rm(list=ls())
