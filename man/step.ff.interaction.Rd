@@ -103,10 +103,9 @@ X=list()
 X[[1]]=ocean$Potential.density
 X[[2]]=ocean$Temperature
 X[[3]]=ocean$Oxygen
-X[[4]]=ocean$Chloropigment
 n.curves=length(X)
 ntot=dim(Y)[1]
-ntrain=60
+ntrain=50
 ntest=ntot-ntrain
 X.uncent=X
 for(i in 1:n.curves){
@@ -137,6 +136,6 @@ fit.step=step.ff.interaction(X.train, Y.train, t.x.all, t.y)
 Y.pred=pred.ff.interaction(fit.step,  X.test)
 error.selected=mean((Y.pred-Y.test)^2)
 print(c("error.selected=", error.selected))
-coef.obj=getcoef.ff.interaction(fit.step)
-str(coef.obj)
+#coef.obj=getcoef.ff.interaction(fit.step)
+#str(coef.obj)
 }

@@ -121,6 +121,7 @@ step.ff.interaction=function(X, Y, t.x, t.y, s.n.basis=40, t.n.basis=40, inter.n
 
   tau.set=c(1e-3,1e-1,1e1, 1e3)
   x.smooth.params[[9]]= tau.set
+  x.smooth.params[[10]]=t.x
 
   y.smooth.params = list()
   y.smooth.params[[1]] = create.bspline.basis(c(0, 1), t.n.basis)
@@ -147,7 +148,7 @@ step.ff.interaction=function(X, Y, t.x, t.y, s.n.basis=40, t.n.basis=40, inter.n
 
   x.raw.params=x.smooth.params
   x.raw.params[[2]]=c(1e-8,1e-4, 1)
-  x.raw.params[[10]]=c(1e-2,1,1e2)
+  x.raw.params[[9]]=c(1e-2,1,1e2)
 
 
   fit.step.c=C_stepwise_adaptive(t.x,  X, Y, x.raw.params, x.smooth.params,y.smooth.params, all.folds, upper.comp, thresh)
@@ -312,6 +313,7 @@ cv.ff.interaction=function( X, Y, t.x, t.y, main.effect, interaction.effect=NULL
   x.smooth.params[[8]]=  tmp.3
   tau.set=c(1e-3,1e-1,1e1, 1e3)
   x.smooth.params[[9]]= tau.set
+  x.smooth.params[[10]]=t.x
 
   y.smooth.params = list()
   y.smooth.params[[1]] = create.bspline.basis(c(0, 1), t.n.basis)
@@ -376,7 +378,7 @@ cv.ff.interaction=function( X, Y, t.x, t.y, main.effect, interaction.effect=NULL
 
   x.raw.params=x.smooth.params
   x.raw.params[[2]]=c(1e-8,1e-4, 1)
-  x.raw.params[[10]]=c(1e-2,1,1e2)
+  x.raw.params[[9]]=c(1e-2,1,1e2)
 
   fit.cv=C_cv_fix_effects(t.x,   X, Y, main.index, inter.index,  x.raw.params, x.smooth.params,y.smooth.params, all.folds, upper.comp, thresh)
 
@@ -414,6 +416,7 @@ pred.ff.interaction <- function(fit.obj,  X.test){
 getcoef.ff.interaction <- function(fit.obj){
   fit.cv=fit.obj$fitted_model
   x.smooth.params=fit.obj$x.smooth.params
+  t.x=x.smooth.params[[10]]
   for(k in 1:length(x.smooth.params[[8]]))
   {
     tmp=x.smooth.params[[8]][[k]]
@@ -426,6 +429,10 @@ getcoef.ff.interaction <- function(fit.obj){
   coef.fit=C_find_coef_ff_interaction(fit.cv, X.train, Y.train, x.smooth.params, y.smooth.params, y_penalty_inv)
   intercept=coef.fit$intercept
   coef_main=coef.fit$coef_main
+  for(i in 1:length(coef_main))
+  {
+    coef_main[[i]]=coef_main[[i]]/(max(t.x[[i]])-min(t.x[[i]]))
+  }
   main_effects=coef.fit$main_effects+1
   inter_effects=coef.fit$inter_effects+1
   coef.inter.list=coef.fit$coef_inter
@@ -434,7 +441,9 @@ getcoef.ff.interaction <- function(fit.obj){
   {
    for(i in 1:length(coef.inter.list))
    {
-     coef_inter[[i]]=array(unlist(coef.inter.list[[i]]), c(dim(coef.inter.list[[i]][[1]]), length(coef.inter.list[[i]])));
+     coef_inter[[i]]=array(unlist(coef.inter.list[[i]]), c(dim(coef.inter.list[[i]][[1]]), length(coef.inter.list[[i]])))
+     tmp=(max(t.x[[inter_effects[i,1]]])-min(t.x[[inter_effects[i,1]]]))*(max(t.x[[inter_effects[i,2]]])-min(t.x[[inter_effects[i,2]]]))
+     coef_inter[[i]]=coef_inter[[i]]/tmp
    }
   }
   return(list(intercept=intercept, main_effects=main_effects, coef_main=coef_main, inter_effects=inter_effects, coef_inter=coef_inter))

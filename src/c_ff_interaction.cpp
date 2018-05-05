@@ -1036,7 +1036,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
           i_select=i_select+1;
         }
       }
-      Rcout << "the interaction effecs after this step=" << std::endl;
+      Rcout << "the interaction effecs after this step==" << std::endl;
       for(int j=0;j<selected_inter.size(); j++)
       {
         Rcout<< "("<<inter_mat(selected_inter(j),0)+1<<","<<inter_mat(selected_inter(j),1)+1<<")"<<std::endl;
@@ -1054,7 +1054,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
     int i_select=0;
     for(int i=0; i<main_all.size();i++)
     {
-      if(main_index(i)==1)
+      if(opt_main_index(i)==1)
       {
         selected_main(i_select)=main_all(i)+1;
         i_select=i_select+1;

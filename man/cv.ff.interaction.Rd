@@ -103,7 +103,7 @@ X[[3]]=ocean$Oxygen
 X[[4]]=ocean$Chloropigment
 n.curves=length(X)
 ntot=dim(Y)[1]
-ntrain=80
+ntrain=50
 ntest=ntot-ntrain
 X.uncent=X
 for(i in 1:n.curves){
@@ -136,6 +136,6 @@ fit.inter=cv.ff.interaction(X.train, Y.train, t.x.all, t.y,  main.effect, inter.
 Y.pred=pred.ff.interaction(fit.inter,  X.test)
 error.inter=mean((Y.pred-Y.test)^2)
 print(c("error.inter=", error.inter))
-coef.obj=getcoef.ff.interaction(fit.inter)
-str(coef.obj)
+#coef.obj=getcoef.ff.interaction(fit.inter)
+#str(coef.obj)
 }

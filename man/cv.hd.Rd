@@ -97,24 +97,23 @@ cv.hd(X, Y, t.x.list, t.y, K.cv = 5, s.n.basis = 25, t.n.basis = 50,
 data(air)
 t.x=seq(0,1,length=24)
 t.y=seq(0,1,length=24)
-air.cv=cv.hd(X=list(air[[2]][1:40,]), Y=air[[1]][1:40,], list(t.x), t.y,
+air.cv=cv.hd(X=list(air[[2]][1:20,]), Y=air[[1]][1:20,], list(t.x), t.y,
              K.cv=2, s.n.basis = 8, t.n.basis = 8)
 air.pred=pred.hd(air.cv, list(air[[2]][1:2,]))
 predict.error=mean((air.pred-air[[1]][1:2,])^2)
 print(c("predict error=", predict.error))
-est.coefficient=getcoef.hd(air.cv)
 
 
 \donttest{
 #########################################
-#example with simulated data and p=1000
+#example with simulated data and p=200
 #########################################
 
 rm(list=ls())
 ptm <- proc.time()
 library(MASS)
 
-n.curves=1000 # total number of predictor curves.
+n.curves=200 # total number of predictor curves.
 
 t.x=seq(0,1,length.out=80) # observation points for X_i(s).
 t.y=seq(0,1,length.out=100) # observation points for Y(t).
@@ -172,8 +171,5 @@ print(c("estimation error=", est.error))
 est.coefficient=getcoef.hd(fit.cv)
 mu.est=est.coefficient[[1]]
 beta.est=est.coefficient[[2]]
-print(proc.time()-ptm)
-#   user  system elapsed
-# 149.01    2.25  151.29
 }
 }
