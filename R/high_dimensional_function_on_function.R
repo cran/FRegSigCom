@@ -1,5 +1,7 @@
 #' @import fda
-
+#' @useDynLib FRegSigCom
+#' @name FRegSigCom
+#' @importFrom stats rnorm
 #library(fda)
 
 

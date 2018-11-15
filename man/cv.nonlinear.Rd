@@ -1,5 +1,6 @@
 \name{cv.nonlinear}
 \alias{cv.nonlinear}
+%ff.nonlinear.R
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Cross-validation for nonlinear function-on-function regression
 %%  ~~function to do ... ~~
@@ -11,18 +12,10 @@ where \eqn{\mu(t)}{\mu(t)} is the intercept function, \eqn{\{F_i(x,
 nonlinear functions of \eqn{x, s, t},  \eqn{\{X_i(s),1\le i\le p\}}{{X_i(s), 1\le i\le p}} are functional predictors, and \eqn{\epsilon(t)}{\epsilon(t)} is the noise function.
 
 In this method, we require that all the sample curves of each functional predictor be observed in a common dense set, but the observation points can be different for different functional predictors. All the sample curves of the functional response are observed in a common dense set.
-
-This method estimates a special decomposition:
-\deqn{F_i(x,s,t)=\sum_{k=1}^\infty G_{ik}(x,s)w_k(t),  1\le i\le p.}{F_i(x,s,t)=G_{i1}(x,s)w_1(t)+...+G_{iK}(x,s)w_K(t),   1\le i\le p.}
-We first estimate \eqn{\{G_{ik}(x,s), 1\le i\le p\}}{{G_{ik}(x,s), 1\le
-    i\le p}} for each \eqn{k>0}  by solving a generalized functional
-eigenvalue problem with smoothness tuning parameter \eqn{\lambda} on its
-Sobolev norm, and then estimate \eqn{\{w_{k}(t), k>0\}}{{w_{k}(t), k>0}} by penalized least square with smoothness tuning parameter \eqn{\kappa}.
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-cv.nonlinear(X, Y, t.x.list, t.y, s.n.basis = 30, x.n.basis = 30,
-        t.n.basis = 30, K.cv = 5, upper.com = 15, thresh = 0.005)
+cv.nonlinear(X, Y, t.x.list, t.y, s.n.basis = 40, x.n.basis = 40,
+        t.n.basis = 40, K.cv = 5, upper.comp = 10, thresh = 0.01)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,52 +25,80 @@ cv.nonlinear(X, Y, t.x.list, t.y, s.n.basis = 30, x.n.basis = 30,
   \item{Y}{the \eqn{n\times m}{n*m} data matrix for the functional response \eqn{Y(t)}{Y(t)}, where  \eqn{n}  is the sample size and  \eqn{m}  is the number of the observation time points for \eqn{Y(t)}{Y(t)}.
 %%     ~~Describe \code{Y} here~~
 }
-  \item{t.x.list}{a list of length \eqn{p}. Its \eqn{i}-th element is the vector of obesrvation time points of the \eqn{i}-th functional predictor \eqn{X_i(s)}{X_i(s)}, \eqn{1\le i\le p}{1\le i\le p}.
+  \item{t.x.list}{a list of length \eqn{p}. Its \eqn{i}-th element is the vector of observation time points of the \eqn{i}-th functional predictor \eqn{X_i(s)}{X_i(s)}, \eqn{1\le i\le p}{1\le i\le p}.
 %%     ~~Describe \code{t.x} here~~
 }
-  \item{t.y}{the vector of obesrvation time points of the functional response \eqn{Y(t)}{Y(t)}.
+  \item{t.y}{the vector of observation time points of the functional response \eqn{Y(t)}{Y(t)}.
 %%     ~~Describe \code{t.y} here~~
 }
-  \item{s.n.basis}{the number of B-spline basis functions for the argument \eqn{s}. Default  is 30.
+  \item{s.n.basis}{the number of B-spline basis functions for the argument \eqn{s}. Default  is 40.
 %%     ~~Describe \code{s.n.basis} here~~
 }
-  \item{x.n.basis}{the number of B-spline basis functions for \eqn{x}. Default is 30.
+  \item{x.n.basis}{the number of B-spline basis functions for \eqn{x}. Default is 40.
 %%     ~~Describe \code{x.n.basis} here~~
 }
-  \item{t.n.basis}{the number of B-spline basis functions for \eqn{t}. Default is 30.
+  \item{t.n.basis}{the number of B-spline basis functions for \eqn{t}. Default is 4.
 %%     ~~Describe \code{t.n.basis} here~~
 }
   \item{K.cv}{the number of CV folds. Default is 5.
-%%     ~~Describe \code{K.cv} here~~
 }
-  \item{upper.com}{the upper bound for the maximum number of components need to calculate. Default is 15.
-%%     ~~Describe \code{upper.com} here~~
+ \item{upper.comp}{the upper bound for the maximum number of components to be calculated. Default is 10.
+%%     ~~Describe \code{upper.comp} here~~
 }
-  \item{thresh}{a number between 0 and 1 specifying the minimum proportion of variation to be explained by each selected component relative to all the selected components. This will help determining the upper bound of the number of components to be used in CV, and the optimal number of components will be determined from 1,2,..., to the minimum of this uppber bound and upper.com by CV. A smaller thresh value leads to more components to be selected and a longer running time. A larger thresh value needs less running time, but may miss some important components and lead to a larger prediction error. Default is 0.005.
+  \item{thresh}{a number between 0 and 1 used to determine the maximum number of components we need to calculate. The maximum number is between one and the "upp.comp" above. The optimal number of components will be chosen between 1 and this maximum number, together with other tuning parameters by cross-validation. A smaller thresh value leads to a larger maximum number of components and a longer running time. A larger thresh value needs less running time, but may miss some important components and lead to a larger prediction error. Default is 0.01.
 %%     ~~Describe \code{thresh} here~~
 }
 }
-%\details{}
+\details{
+This method estimates a special decomposition:
+\deqn{F_i(x,s,t)=\sum_{k=1}^\infty G_{ik}(x,s)w_k(t),  1\le i\le p.}{F_i(x,s,t)=G_{i1}(x,s)w_1(t)+...+G_{iK}(x,s)w_K(t),   1\le i\le p.}
+We first estimate \eqn{\bold{G}_k=(G_{1k}(x_1,s),...,G_{pk}(x_p,s))^T} for each \eqn{k>0}  by solving a generalized penalized functional
+eigenvalue problem
+\deqn{max_{\bold{G}} \frac{\hat{\bold{\Lambda}}(\bold{G},\bold{G})}{\hat{\bold{\Sigma}}(\bold{G},\bold{G})+P(\bold{G})}}
+\deqn{ {\rm{s.t.}} \quad \hat{\bold{\Sigma}}(\bold{G}_{k'},\bold{G})=0}
+\deqn{  {\rm{and}} \quad  \int\int \bold{G}(s)^T
+  \hat{\Sigma}(s,s')\bold{G}_{k'}(s')dsds'=0 \quad {\rm{for}}
+  \quad k'<k}
+where
+\deqn{\hat{\bold{\Lambda}}(\bold{G},\bold{G})=\int \left[\sum_{\ell=1}^n\sum_{i=1}^p \int \{G_i(x_{\ell,i}(s),s)-\bar{G}_i(s)\}ds \{y_{\ell}(t)-\bar{y}(t)\}  \right]^2 dt /n^2,}
+\deqn{\hat{\bold{\Sigma}}(\bold{G},\tilde{\bold{G}})=\sum_{\ell=1}^n \left[\sum_{i=1}^p \int \{G_i(x_{\ell,i}(s),s)-\bar{G}_i(s)\}ds\right]\left[\sum_{j=1}^p \int \{\tilde{G}_j(x_{\ell,j}(s),s)-\bar{\tilde{G}}_j(s)\}ds\right]/n,}
+ penlaty
+\deqn{P(G)=\lambda \sum_{j=1}^p \{\|G_j\|^2+\tau(\|\partial_{xx}G_j\|^2+\|\partial_{xs}G_j\|^2+\|\partial_{ss}G_j\|^2)\},}
+and \eqn{
+  <G,\tilde{G}>_{H^2}=<G,\tilde{G}>_{L^2}+<\partial_{xx}G,\partial_{xx}\tilde{G}>_{L^2}+<\partial_{xs}G,\partial_{xs}\tilde{G}>_{L^2}+<\partial_{ss}G,\partial_{ss}\tilde{G}>_{L^2}
+} with \eqn{<G,\tilde{G}>_{L^2}=\int\int G(x,s)\tilde{G}(x,s) dxds}.
+Then we estimate \eqn{\{w_{k}(t), k>0\}}{{w_{k}(t), k>0}} by regressing
+\eqn{\{y_{\ell}(t)\}_{\ell=1}^n} on \eqn{\{\hat{z}_{\ell,1},... \hat{z}_{\ell,K}\}_{\ell=1}^n} with penalty \eqn{\kappa \sum_{k=0}^K
+  \|w''_k\|^2} tuned by the smoothness parameter
+\eqn{\kappa}. Here \eqn{\hat{z}_{\ell,k}= \sum_{i=1}^p \int (G_{ik}(x_{\ell,i}(s),s)-\bar{G}_{ik}(s))ds}, and \eqn{\bar{G}_{ik}(s)=\sum_{\ell=1}^n G_{ik}(X_{\ell,i}(s),s)/n}.
+}
 
 \value{A fitted CV-object, which is used in the function \code{\link{pred.nonlinear}} for prediction and \code{\link{getcoef.nonlinear}} for  extracting the estimated coefficient functions.
-\item{opt.index}{index of the optimal lambda.}
-\item{min.error}{minimum CV error.}
-\item{errors}{list for CV errors. }
-\item{lambda.set}{the set of \eqn{\lambda} values used in CV.}
-\item{kappa.set}{the set of \eqn{\kappa} values used in CV.}
 \item{opt.K}{optimal number of components to be selected.}
-\item{opt.lambda}{optimal value for \eqn{\lambda}, the tuning parameter
-  for \eqn{\{G_{ik}(x,s), 1 \le i \le p\}}{{G_{ik}(x,s), 1 \le i \le p}}.}
+\item{opt.lambda}{optimal value for \eqn{\lambda}.} %, the tuning parameter  for \eqn{\{G_{ik}(x,s), 1 \le i \le p\}}{{G_{ik}(x,s), 1 \le i \le p}}.}
+\item{opt.tau}{optimal value for \eqn{\tau}.}%, the smoothness tuning parameter for \eqn{w_k(t)}{w_k(t)}.}
 \item{opt.kappa}{optimal value for \eqn{\kappa}, the smoothness tuning parameter for \eqn{w_k(t)}{w_k(t)}.}
-\item{fit.1}{a list for internal use.}
-\item{y.params}{a list for internal use.}
+\item{...}{other output for internal use.}
+%\item{y.params}{a list for internal use.}
 }
+%\item{opt.index}{index of the optimal lambda.}
+%\item{min.error}{minimum CV error.}
+%\item{errors}{list for CV errors. }
+%\item{lambda.set}{the set of \eqn{\lambda} values used in CV.}
+%\item{kappa.set}{the set of \eqn{\kappa} values used in CV.}
+%\item{opt.K}{optimal number of components to be selected.}
+%\item{opt.lambda}{optimal value for \eqn{\lambda}, the tuning parameter
+%  for \eqn{\{G_{ik}(x,s), 1 \le i \le p\}}{{G_{ik}(x,s), 1 \le i \le p}}.}
+%\item{opt.kappa}{optimal value for \eqn{\kappa}, the smoothness tuning parameter for \eqn{w_k(t)}{w_k(t)}.}
+%\item{fit.1}{a list for internal use.}
+%\item{y.params}{a list for internal use.}
+%}
 \references{
    Xin Qi and Ruiyan Luo. (Accepted) Nonlinear function on function additive model
    with multiple predictor curves. Stistica Sinica.
   %% ~put references to the literature/web site here ~
 }
-\author{Ruiyan Luo and Xin Qi
+\author{Xin Qi and Ruiyan Luo
 %%  ~~who you are~~
 }
 %\note{
@@ -90,102 +111,33 @@ cv.nonlinear(X, Y, t.x.list, t.y, s.n.basis = 30, x.n.basis = 30,
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
-#########################################
-# toy example
-# fit a nonlinear regression model with p=1 in the air quality data
-#########################################
+
+#################################################################################
+# Example: Nonlinear function-on-function model
+###############################################################################
 
 ptm <- proc.time()
-data(air)
-t.x=seq(0,1,length=24)
-t.y=seq(0,1,length=24)
-air.nonlinear.cv=cv.nonlinear(X=list(air[[2]][1:60,]), Y=air[[1]][1:60,], list(t.x),
-           t.y, K.cv=2, s.n.basis = 8, x.n.basis = 10, t.n.basis = 8)
-air.pred=pred.nonlinear(air.nonlinear.cv, list(air[[2]][1:2,]))
-est.coefficient=getcoef.nonlinear(air.nonlinear.cv)
+library(FRegSigCom)
+library(refund)
+data(DTI)
+I=which(is.na(apply(DTI$cca,1,mean)))
+X=DTI$cca[-I,] # functional response
+Y=DTI$rcst[-I,-(1:12)] #functional predictor
+t.x <- list(seq(0,1,length=dim(X)[2]))
+t.y <- seq(0,1,length=dim(Y)[2])
+# randomly split all the observations into a training set with 200 observations
+# and a test set.
+train.id=sample(1:nrow(Y), 30)
+X.train.list <- list(X[train.id,])
+Y.train <- Y[train.id, ]
+X.test.list <- list(X[-(train.id),])
+Y.test <- Y[-(train.id), ]
+fit.cv=cv.nonlinear(X.train.list, Y.train, t.x, t.y, upper.comp=3,
+s.n.basis=20, x.n.basis=20,t.n.basis=20) 
+           # in practice, use the default values (or larger) for
+           # "upper.comp", "s.n.basis","x.n.basis", and "t.n.basis".
+Y.pred=pred.nonlinear(fit.cv, X.test.list)
+nonlinear.error= mean((Y.pred-Y.test)^2)
+print(c("prediction error=",nonlinear.error))
 print(proc.time()-ptm)
-
-
-
-\donttest{
-#########################################
-# example with simulated data and p=3
-#########################################
-rm(list=ls())
-ptm <- proc.time()
-library(MASS)
-
-n.curves=3 # the number of predictor curves.
-t.x=seq(0,1,length.out=80) # observation points for all six predictor curves.
-t.y=seq(0,1,length.out=100) # observation points for response curve.
-nnew <- 50
-ntrain <-100
-ntot <- nnew+ntrain
-
-######################################################
-#generate the predictor curves using sin() and cos() basis functions.
-#########################################################
-X=list()
-X[[1]]=X[[2]]=X[[3]]=0
-Sigma=matrix(0.5, 3, 3)
-diag(Sigma)=1
-for(k in 1:20){
-  coef.mtx.1=mvrnorm(ntot, rep(0,3), Sigma)
-  coef.mtx.2=mvrnorm(ntot, rep(0,3), Sigma)
-  X[[1]]=X[[1]]+coef.mtx.1[,1]\%*\%t(sin(k*pi*t.x))/k+coef.mtx.2[,1]\%*\%t(cos(k*pi*t.x))/k
-  X[[2]]=X[[2]]+coef.mtx.1[,2]\%*\%t(sin(k*pi*t.x))/k+coef.mtx.2[,2]\%*\%t(cos(k*pi*t.x))/k
-  X[[3]]=X[[3]]+coef.mtx.1[,3]\%*\%t(sin(k*pi*t.x))/k+coef.mtx.2[,3]\%*\%t(cos(k*pi*t.x))/k
-}
-
-######################################################
-#generate the nonlinear function and calculate the \int_0^1F_j(X_j(s),s,t)ds, j=1,..,3.
-#########################################################
-A.1=sapply(1:ntot, function(i){t.x})
-A.1=t(A.1)
-S.1.mtx=sapply(1:length(t.y), function(i){
-         tmp= (A.1+X[[1]]-3*t.y[i])^2; apply(tmp,1,mean)})
-S.2.mtx= sapply(1:length(t.y), function(i){
-         tmp=cos(2*X[[2]]*A.1)+5*sin(X[[2]]*t.y[i]^(0.5)) ; apply(tmp,1,mean)})
-S.3.mtx=sapply(1:length(t.y), function(i){
-         tmp= 1/(1+X[[3]]^2+A.1*t.y[i]); apply(tmp,1,mean)})
-
-######################################################
-#generate the noise function, and response function
-#########################################################
-S.mtx=0.4*(S.1.mtx+S.2.mtx+S.3.mtx)
-E<-matrix(rnorm(ntot*length(t.y)),ntot, length(t.y))
-mu.val<- cos(4*pi*t.y)
-Y<-t(sapply(1:ntot, function(i){mu.val+S.mtx[i,] + E[i,]}))
-X.train=list()
-X.new=list()
-for(j in 1:n.curves)
-{  X.train[[j]]=X[[j]][1:ntrain,]
-   X.new[[j]]=X[[j]][-(1:ntrain),]
-}
-Y.train <- Y[1:ntrain, ]
-Y.new <- Y[-(1:ntrain), ]
-E.new <- E[-(1:ntrain),]
-
-######################################################
-#fit the nonlinear function-on-function model and make prediction
-#########################################################
-t.x.list=lapply(1:n.curves, function(k){t.x})
-fit.cv=cv.nonlinear(X.train, Y.train, t.x.list, t.y)
-Y.pred=pred.nonlinear(fit.cv, X.new)
-nonlinear.error=mean((Y.pred-Y.new)^2)
-print(c("nonlinear prediction error=",nonlinear.error))
-nonlinear.esterror=mean((Y.pred-Y.new+E.new)^2)
-print(c("nonlinear estimation.error=",nonlinear.esterror))
-
-######################################################
-#extract the estimated mu(t), F(x,s,t)
-#########################################################
-F.list=getcoef.nonlinear(fit.cv)
-mu=F.list$mu
-F=F.list$F
-X.grid=F.list$X.grid
-print(proc.time()-ptm)
-#   user  system elapsed
-#  59.30    7.63   66.94
-}
 }

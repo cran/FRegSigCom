@@ -9,13 +9,17 @@
   in the output of \code{\link{cv.ff.interaction}} with given main and
   two-way interaction effects, or the model in the output of \code{\link{step.ff.interaction}} with selected main and two-way interaction effects.}
 \usage{
-pred.ff.interaction(fit.obj, X.test) 
+pred.ff.interaction(fit.obj, X.test, t.y.test=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{fit.obj}{the output object of the function \code{\link{cv.ff.interaction}}, or \code{\link{step.ff.interaction}}.}
 %%     ~~Describe \code{fit.cv} here~~
  \item{X.test}{new observations of functional predictors. It is a list of the same length and the same structure as the input \code{X} for \code{\link{cv.ff.interaction}} or \code{\link{step.ff.interaction}}. }
+ \item{t.y.test}{a vector of observation time points where values of predicted response curves are to be calculated. If
+   \code{t.y.test}=NULL (default), \code{t.y} in
+   \code{\link{cv.ff.interaction}} or \code{\link{step.ff.interaction}}
+   will be used.}
  }
 \value{A matrix containing the predicted values of response curves
   evaluated at \code{t.y} for the new observations. The number of rows

@@ -1,14 +1,14 @@
 \name{getcoef.nonlinear}
 \alias{getcoef.nonlinear}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Get the estimated intercept and nonlinear functions
+\title{Get the estimated intercept and nonlinear functions in nonlinear function-on-function model
 %%  ~~function to do ... ~~
 }
-\description{Calculate the estimates for \eqn{\mu(t), F_i(x,s,t)}{\mu(t), \alpha(t), F_i(x,s,t)} based on the object obtained from \code{\link{cv.nonlinear}}.
+\description{This function is used to calculate the estimates for \eqn{\mu(t), F_i(x,s,t)'s}{\mu(t), F_i(x,s,t)'s} based on the object obtained from \code{\link{cv.nonlinear}}.
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-getcoef.nonlinear(fit.cv, n.x.grid = 100)
+getcoef.nonlinear(fit.cv, n.x.grid = 50)
 %\method{coef}{nonlinear}(fit.cv, n.x.grid=100)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -16,7 +16,7 @@ getcoef.nonlinear(fit.cv, n.x.grid = 100)
   \item{fit.cv }{the object obtained from \code{\link{cv.nonlinear}}.
 %%     ~~Describe \code{fit.cv} here~~
 }
-  \item{n.x.grid }{the number of grid points of \eqn{x}. The estimated \eqn{F_i(x,s,t)} is calculated in a three-dimensional grid of \eqn{(x,s,t)}. The grid points of \eqn{s} and \eqn{t} are the observation points of \eqn{X_i(s)} and \eqn{Y(t)} used in \code{\link{cv.nonlinear}}, respectively. The grid of \eqn{x} includes \code{n.x.grid} equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}. Default of  n.x.grid is 100.
+  \item{n.x.grid }{the number of grid points of \eqn{x}. The estimated \eqn{F_i(x,s,t)} is calculated in a three-dimensional grid of \eqn{(x,s,t)}. The grid points of \eqn{s} and \eqn{t} are the observation points of \eqn{X_i(s)} and \eqn{Y(t)} used in \code{\link{cv.nonlinear}}, respectively. The grid of \eqn{x} includes \code{n.x.grid} equally spaced values between the minimum and maximum of all the discretely observed values of \eqn{X_i(s)}. Default of  n.x.grid is 50.
 %%     ~~Describe \code{n.x.grid} here~~
 }
 }
@@ -35,9 +35,6 @@ getcoef.nonlinear(fit.cv, n.x.grid = 100)
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-}
-\references{Ruiyan Luo and Xin Qi,
-%% ~put references to the literature/web site here ~
 }
 \author{Ruiyan Luo and Xin Qi
 %%  ~~who you are~~

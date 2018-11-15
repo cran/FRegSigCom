@@ -1,7 +1,9 @@
 #include <RcppEigen.h>
 #include <Rcpp.h>
+#include "common_function.h"
 
 // [[Rcpp::depends(RcppEigen)]]
+
 
 using namespace Rcpp;
 using namespace std;
@@ -9,25 +11,9 @@ using namespace Eigen;
 
 
 /////////////////////////////////////////
-VectorXi extract(VectorXi x, VectorXi ind)
-{
-  VectorXi out(ind.sum());
-  int j=0;
-  for(int i=0; i<ind.size(); i++)
-  {
-    if(ind(i)!=0)
-    {
-      out(j)=x(i);
-      j=j+1;
-    }
-  }
-  return(out);
-}
-
-/////////////////////////////////////////
 ////////////////////////////////////////
 
-MatrixXd get_cv_error_smooth(MatrixXd T_train, MatrixXd T_valid, MatrixXd Y_train, MatrixXd Y_valid, List y_params, List y_penalty_inv)
+MatrixXd get_cv_error_ff_interaction(MatrixXd T_train, MatrixXd T_valid, MatrixXd Y_train, MatrixXd Y_valid, List y_params, List y_penalty_inv)
 {
   VectorXd kappa_set=as<VectorXd>(y_params(1));
   MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5));
@@ -38,7 +24,7 @@ MatrixXd get_cv_error_smooth(MatrixXd T_train, MatrixXd T_valid, MatrixXd Y_trai
   MatrixXd t_valid_mtx(T_valid.rows(), ncol+1);
   t_valid_mtx.col(0)=MatrixXd::Constant(T_valid.rows(),1, 1/sqrt(T_train.rows()));
   t_valid_mtx.rightCols(ncol)=T_valid;
-
+  
   MatrixXd coef_w_0=B_vals_weig*Y_train.transpose()*t_train_mtx, coef_w;
   MatrixXd error(q,ncol), V(coef_w_0.cols(), B_vals.cols()), Y_pred;
   for(int k=0; k<q; k++)
@@ -78,7 +64,7 @@ List calculate_G_and_Y(List t_x,  List X, MatrixXd Y, List x_params, List all_fo
   }
   ////////////calculate the list of G and G_inter for the whole data
   List G_mean_main_list(n_curves), G_mean_inter_list(inter_mat.rows()), G_main_list(n_curves),  G_inter_list(inter_mat.rows()), tmp_list(n_curves);
-
+  
   for(int i=0; i<n_curves; i++)
   {
     MatrixXd tmp_mat=as<MatrixXd>(X(i)).transpose();
@@ -102,7 +88,7 @@ List calculate_G_and_Y(List t_x,  List X, MatrixXd Y, List x_params, List all_fo
     G_mean_inter_list(i)=tmp.rowwise().mean();
     G_inter_list(i)=(tmp.colwise()-tmp.rowwise().mean())/sqrt(nsample);
   }
-
+  
   /////////////////////////
   MatrixXd Y_cent=Y.rowwise()-Y.colwise().mean(), Pi=Y_cent*Y_cent.transpose()/nsample/Y.cols();
   Pi=(Pi+Pi.transpose())/2;
@@ -151,11 +137,11 @@ MatrixXd cal_R_inv(MatrixXd v, List weights, List x_params, int n_main, int n_in
   MatrixXd J00=as<List>(x_params(7))(0), J20=as<List>(x_params(7))(1), J11=as<List>(x_params(7))(2), J02=as<List>(x_params(7))(3);
   MatrixXd out(v.rows(), v.cols());
   Map<MatrixXd> out_Xd=Map<MatrixXd>(out.data(), out.rows(), out.cols());
-
+  
   int n_main_basis=(as<VectorXi>(x_params(5)))(0), n_inter_basis=(as<VectorXi>(x_params(5)))(1);
   for(int i=0; i<n_main; i++)
   {
-
+    
     double w0=as<MatrixXd>(weights(0))(i,0), w2=as<MatrixXd>(weights(0))(i,1);
     MatrixXd tmp=w0*J0+tau*w2*J2;
     Map<MatrixXd> tmp_Xd=Map<MatrixXd>(tmp.data(), tmp.rows(), tmp.cols());
@@ -170,7 +156,7 @@ MatrixXd cal_R_inv(MatrixXd v, List weights, List x_params, int n_main, int n_in
     LLT<MatrixXd> lltOf(tmp_Xd);
     out_Xd.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, q)= lltOf.matrixU().solve(v_Xd.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, q));
   }
-
+  
   return out;
 }
 /////////////////////////////////////////////////
@@ -181,11 +167,11 @@ MatrixXd cal_R_trans_inv(Map<MatrixXd> v, List weights, List x_params, int n_mai
   MatrixXd J00=as<List>(x_params(7))(0), J20=as<List>(x_params(7))(1), J11=as<List>(x_params(7))(2), J02=as<List>(x_params(7))(3);
   MatrixXd out(v.rows(), v.cols());
   Map<MatrixXd> out_Xd=Map<MatrixXd>(out.data(), out.rows(), out.cols());
-
+  
   int n_main_basis=(as<VectorXi>(x_params(5)))(0), n_inter_basis=(as<VectorXi>(x_params(5)))(1);
   for(int i=0; i<n_main; i++)
   {
-
+    
     double w0=as<MatrixXd>(weights(0))(i,0), w2=as<MatrixXd>(weights(0))(i,1);
     MatrixXd tmp=w0*J0+tau*w2*J2;
     Map<MatrixXd> tmp_Xd=Map<MatrixXd>(tmp.data(), tmp.rows(), tmp.cols());
@@ -200,141 +186,23 @@ MatrixXd cal_R_trans_inv(Map<MatrixXd> v, List weights, List x_params, int n_mai
     LLT<MatrixXd> lltOf(tmp_Xd);
     out_Xd.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, q)= lltOf.matrixL().solve(v.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, q));
   }
-
+  
   return out;
 }
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
-
-
-void find_orth_basis(Map<MatrixXd> &orthConst_mtx)
-{
-  int m=orthConst_mtx.cols();
-  orthConst_mtx.col(0)=orthConst_mtx.col(0)/((orthConst_mtx.col(0)).norm());
-  for(int i=1;i<m;++i)
-  {
-    MatrixXd tmp=(orthConst_mtx.col(i-1)).transpose()*orthConst_mtx.rightCols(m-i);
-    orthConst_mtx.rightCols(m-i)=orthConst_mtx.rightCols(m-i)-orthConst_mtx.col(i-1)*tmp;
-    orthConst_mtx.col(i)=orthConst_mtx.col(i)/((orthConst_mtx.col(i)).norm());
-  }
-}
-
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
 
-void  power_eig(Map<MatrixXd> Pi, Map<MatrixXd> M, double & max_value, Map<VectorXd> & beta_current, double tol=1e-16)//function used to calculate the first eigenvalue of Pi which is orthogonal to M
-{
-  int n=Pi.rows(), p=M.rows();
-  VectorXd tmp_ini=VectorXd::Constant(p, 1), b_ini=tmp_ini/tmp_ini.norm(), b_old_ini=VectorXd::Zero(p), tmp1_ini=VectorXd::Zero(p);
-  Map<VectorXd> tmp=Map<VectorXd>(tmp_ini.data(), tmp_ini.size());
-  Map<VectorXd> b=Map<VectorXd>(b_ini.data(), b_ini.size());
-  Map<VectorXd> b_old=Map<VectorXd>(b_old_ini.data(), b_old_ini.size());
-  Map<VectorXd> tmp1=Map<VectorXd>(tmp1_ini.data(), tmp1_ini.size());
-  int count=0;
-  double e1=(b-b_old).norm(), e2=(b+b_old).norm();
-  double sqrt_tol=sqrt(tol);
-  while(count<40 && e1>sqrt_tol && e2>sqrt_tol)
-  {
-    count++;
-    b_old=b;
-    tmp=b-M*(M.transpose()*b);
-    tmp1.head(n)=Pi*tmp.head(n);
-    b=tmp1-M*(M.transpose()*tmp1);
-    max_value=b_old.dot(b);
-    b=b/b.norm();
-    e1=(b-b_old).norm();
-    e2=(b+b_old).norm();
-  }
-  beta_current=b;
+///////////////////////////////////////////////////////////////////////
 
-}
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-
-List cal_comp_without_max(Map<MatrixXd> Pi_eig, Map<MatrixXd> M_basis, int upper_comp, double thresh)
-{
-
-  int nsample=Pi_eig.cols();
-  find_orth_basis(M_basis);
-  int p=M_basis.rows();
-  VectorXd D_ini=VectorXd::Zero(p), beta_current_ini=VectorXd::Zero(p);
-  Map<VectorXd> D=Map<VectorXd>(D_ini.data(), p);
-  Map<VectorXd> beta_current=Map<VectorXd>(beta_current_ini.data(), p);
-  VectorXd max_value_vec=VectorXd::Zero(upper_comp);
-  MatrixXd beta=MatrixXd::Zero(p, upper_comp);
-  MatrixXd tmp_matrix;
-  int n_comp;
-
-  for(n_comp=0; n_comp<upper_comp; n_comp++)
-  {
-    double max_value;
-    power_eig(Pi_eig, M_basis, max_value, beta_current);
-    max_value_vec(n_comp)=max_value;
-    beta.col(n_comp)=beta_current;
-    if((max_value_vec(n_comp)/max_value_vec.head(n_comp+1).sum()<thresh))
-    {break;}
-    if(n_comp==upper_comp-1)
-    {break;}
-    D=VectorXd::Zero(p);
-    D.head(nsample)=beta_current.head(nsample);
-    D=D/D.norm();
-    D=D-M_basis*(M_basis.transpose()*D);
-    D=D/D.norm();
-    MatrixXd tmp_2=M_basis;
-    tmp_matrix=MatrixXd::Zero(M_basis.rows(), M_basis.cols()+1);
-    tmp_matrix.leftCols(M_basis.cols())=tmp_2;
-    tmp_matrix.col(M_basis.cols())=D;
-    new (&M_basis) Map<MatrixXd>(tmp_matrix.data(), tmp_matrix.rows(), tmp_matrix.cols());
-  }
-  return List::create( _["beta"]=beta.leftCols(n_comp+1),  _["max_value"]=max_value_vec);
-}
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-
-List cal_comp_with_max(Map<MatrixXd> Pi_eig, Map<MatrixXd> M_basis, int max_comp)
-{
-  int nsample=Pi_eig.cols();
-  find_orth_basis(M_basis);
-  int p=M_basis.rows();
-  VectorXd D_ini=VectorXd::Zero(p), beta_current_ini=VectorXd::Zero(p);
-  Map<VectorXd> D=Map<VectorXd>(D_ini.data(), p);
-  Map<VectorXd> beta_current=Map<VectorXd>(beta_current_ini.data(), p);
-  VectorXd max_value_vec=VectorXd::Zero(max_comp);
-  MatrixXd beta=MatrixXd::Zero(p, max_comp);
-  MatrixXd tmp_matrix;
-  int n_comp;
-  for(n_comp=0; n_comp<max_comp; n_comp++)
-  {
-    double max_value;
-    power_eig(Pi_eig, M_basis, max_value, beta_current);
-    max_value_vec(n_comp)=max_value;
-    beta.col(n_comp)=beta_current;
-    if(n_comp==max_comp-1)
-    {break;}
-    D=VectorXd::Zero(p);
-    D.head(nsample)=beta_current.head(nsample);
-    D=D/D.norm();
-    D=D-M_basis*(M_basis.transpose()*D);
-    D=D/D.norm();
-    MatrixXd tmp_2=M_basis;
-    tmp_matrix=MatrixXd::Zero(M_basis.rows(), M_basis.cols()+1);
-    tmp_matrix.leftCols(M_basis.cols())=tmp_2;
-    tmp_matrix.col(M_basis.cols())=D;
-    new (&M_basis) Map<MatrixXd>(tmp_matrix.data(), tmp_matrix.rows(), tmp_matrix.cols());
-
-  }
-  return List::create( _["beta"]=beta,  _["max_value"]=max_value_vec);
-}
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////////
 
 
 List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_penalty_inv, List y_params, List all_folds, VectorXi main_index, VectorXi inter_index, int upper_comp, double thresh)
 {
-
+  
   MatrixXi inter_mat=as<MatrixXi>(list_for_G_Pi(0));
   int n_main=main_index.sum(), n_inter=inter_index.sum();
   int n_curves=x_params(0);
@@ -350,8 +218,8 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
   List opt_errors;
   MatrixXd G_ini(n_main*n_main_basis+n_inter*n_inter_basis, nsample);
   Map<MatrixXd> G=Map<MatrixXd>(G_ini.data(), G_ini.rows(), nsample);
-
-
+  
+  
   for(int i=0; i<n_main; i++)
   {
     G.block(i*n_main_basis, 0, n_main_basis, nsample)=as<MatrixXd>(as<List>(list_for_G_Pi["G_main_list"])(main_effect(i)));
@@ -360,7 +228,7 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
   {
     G.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, nsample)=as<MatrixXd>(as<List>(list_for_G_Pi["G_inter_list"])(inter_effect(i)));
   }
-
+  
   for(int i_tau=0; i_tau<tau_set.size(); i_tau++)
   {
     double tau=tau_set(i_tau);
@@ -369,24 +237,26 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
     int  size_lambda=lambda_set.size();
     VectorXi max_comp(size_lambda);
     List max_value_list(size_lambda), z_list(size_lambda), T_list(size_lambda), tmp;
-
+    
     double lambda, tmp_value;
     MatrixXd Pi=list_for_G_Pi["Pi"];
-
+    
     for(int i_lambda=0; i_lambda<size_lambda; i_lambda++)
     {
       lambda=lambda_set(i_lambda);
-      MatrixXd M(nsample+R_inv_tran_G.rows(), nsample);
-      Map<MatrixXd> M_basis=Map<MatrixXd>(M.data(), M.rows(), M.cols());
-      M_basis.topRows(nsample)=sqrt(lambda)*(MatrixXd::Identity(nsample, nsample));
-      M_basis.bottomRows(R_inv_tran_G.rows())=-R_inv_tran_G;
+      int p=G.rows(), r=G.cols();
+      MatrixXd M_ini(r+p, r);
+      Map<MatrixXd> M=Map<MatrixXd>(M_ini.data(), M_ini.rows(), M_ini.cols());
+      M.topRows(r)=sqrt(lambda)*MatrixXd::Identity(r, r);
+      M.bottomRows(p)=-R_inv_tran_G;
       Map<MatrixXd> Pi_eig=Map<MatrixXd>(Pi.data(), Pi.rows(), Pi.cols());
-      List fit=cal_comp_without_max(Pi_eig, M_basis, upper_comp, thresh);
-
+      List fit=cal_comp_without_max(Pi_eig, M, upper_comp, thresh);
+      
       MatrixXd beta=as<MatrixXd>(fit["beta"]);
       MatrixXd w=beta.topRows(nsample);
       MatrixXd v=beta.bottomRows(beta.rows()-nsample);
       MatrixXd z=pow(lambda, -0.5)*cal_R_inv(v, weight_list, x_params, n_main, n_inter, tau);
+      
       max_comp(i_lambda)=beta.cols();
       max_value_list(i_lambda)=as<VectorXd>(fit["max_value"]);
       z_list(i_lambda)=z;
@@ -396,9 +266,9 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
     int K_cv=all_folds.size();
     VectorXd kappa_set=as<VectorXd>(y_params(1));
     List  errors(size_lambda);
-
-
-
+    
+    
+    
     for(int fold_ind=0; fold_ind<K_cv; fold_ind++)
     {
       MatrixXd Y_train=as<MatrixXd>(as<List>(list_for_G_Pi["Y_train_list"])(fold_ind));
@@ -413,7 +283,7 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
       {
         ind(omit(i))=1;
         R_inv_tran_G_valid.col(i)=R_inv_tran_G.col(omit(i));
-
+        
       }
       int i_train=0;
       for(int i=0; i<nsample; i++)
@@ -424,9 +294,10 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
           i_train=i_train+1;
         }
       }
-      R_inv_tran_G_train=(R_inv_tran_G_train.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
       R_inv_tran_G_valid=(R_inv_tran_G_valid.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
-
+      R_inv_tran_G_train=(R_inv_tran_G_train.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
+      
+      
       for(int i_lambda=0; i_lambda<size_lambda; i_lambda++)
       {
         lambda=lambda_set(i_lambda);
@@ -434,31 +305,31 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
         Map<MatrixXd> M_basis=Map<MatrixXd>(M.data(), M.rows(), M.cols());
         M_basis.topRows(nsample_train)=sqrt(lambda)*(MatrixXd::Identity(nsample_train, nsample_train));
         M_basis.bottomRows(R_inv_tran_G_train.rows())=-R_inv_tran_G_train;
-
+        
         Map<MatrixXd> Pi_eig=Map<MatrixXd>(Pi.data(), Pi.rows(), Pi.cols());
         List fit=cal_comp_with_max(Pi_eig, M_basis, max_comp(i_lambda));
         MatrixXd beta=as<MatrixXd>(fit["beta"]);
         MatrixXd T_train=beta.topRows(nsample_train);
         MatrixXd T_valid=pow(lambda, -0.5)*R_inv_tran_G_valid.transpose()*beta.bottomRows(beta.rows()-nsample_train);
-
+        
         for(int i=0; i<T_train.cols(); i++)
         {
           tmp_value=(T_train.col(i)).norm();
           T_train.col(i)=T_train.col(i)/tmp_value;
           T_valid.col(i)=T_valid.col(i)/tmp_value;
         }
-
+        
         if(fold_ind==0)
         {
-          errors(i_lambda)=get_cv_error_smooth(T_train, T_valid, Y_train, Y_valid, y_params,  y_penalty_inv);
+          errors(i_lambda)=get_cv_error_ff_interaction(T_train, T_valid, Y_train, Y_valid, y_params,  y_penalty_inv);
         }else
         {
-          errors(i_lambda)=as<MatrixXd>(errors(i_lambda))+get_cv_error_smooth(T_train, T_valid, Y_train, Y_valid, y_params,   y_penalty_inv);
+          errors(i_lambda)=as<MatrixXd>(errors(i_lambda))+get_cv_error_ff_interaction(T_train, T_valid, Y_train, Y_valid, y_params,   y_penalty_inv);
         }
       }
     }
-
-
+    
+    
     int tmp_opt_K=0, tmp_opt_lambda_index=0, tmp_opt_kappa_index=0;
     double tmp_opt_kappa=0, tmp_opt_lambda=0, tmp_min_error=1e20;
     for(int i_lambda=0; i_lambda<size_lambda; i_lambda++)
@@ -509,15 +380,20 @@ List cv_over_tau(List list_for_G_Pi, List weight_list, List x_params, List y_pen
 
 /////////////////////////////////////////////////////
 // [[Rcpp::export]]
-List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_index, Eigen::VectorXi inter_index,   List x_params_raw, List x_params, List y_params, List all_folds, int upper_comp, double thresh)
+List C_cv_fix_effects_adaptive(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_index, Eigen::VectorXi inter_index,   List x_params_raw, List x_params, List y_params, List all_folds, int upper_comp, double thresh)
 {
   int n_main=main_index.sum(), n_inter=inter_index.sum();
+  
+  int q=Y.cols();
+  VectorXd add_mean=VectorXd::LinSpaced(q, 0, 1);
+  add_mean=(Y.maxCoeff()-Y.minCoeff())*(add_mean.array()*add_mean.array())+Y.minCoeff();
+  Y=Y.rowwise()+add_mean.transpose();
   List list_for_G_Pi=calculate_G_and_Y(t_x,  X, Y, x_params, all_folds);
   List weight_list(2);
   weight_list(0)=MatrixXd::Constant(n_main, 2, 1);
   weight_list(1)=MatrixXd::Constant(n_inter, 4, 1);
   VectorXd weight_y=MatrixXd::Constant(upper_comp+1,1,1);
-
+  
   MatrixXd A=as<MatrixXd>(as<List>(y_params(6))(0)), B=as<MatrixXd>(as<List>(y_params(6))(1));
   VectorXd kappa_set=as<VectorXd>(y_params(1));
   List y_penalty_inv(kappa_set.size());
@@ -533,7 +409,7 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
   }
   Rcout << "**CV procedure for nonadaptive fitting**"  << std::endl;
   Rcout << "**(used to determine the adaptive constants)**"  << std::endl;
-
+  
   List fit_cv_fix_effects=cv_over_tau(list_for_G_Pi, weight_list, x_params_raw,  y_penalty_inv, y_params, all_folds, main_index,  inter_index, upper_comp, thresh);
   MatrixXd T=fit_cv_fix_effects["opt_T"];
   MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5)), K=as<MatrixXd>(y_params(4));
@@ -544,7 +420,7 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
   MatrixXd t_train_mtx(T.rows(), T.cols()+1);
   t_train_mtx.col(0)=MatrixXd::Constant(T.rows(),1, 1/sqrt(T.rows()));
   t_train_mtx.rightCols(T.cols())=T;
-
+  
   MatrixXd coef_w_0=B_vals_weig*Y.transpose()*t_train_mtx, coef_w;
   VectorXd  v(coef_w_0.cols());
   int kappa_index=fit_cv_fix_effects["opt_kappa_index"];
@@ -553,13 +429,13 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
     VectorXd tmp=as<MatrixXd>(as<List>(y_penalty_inv(kappa_index))(ncomp))*coef_w_0.col(ncomp);
     v(ncomp)=tmp.dot(K*tmp);
   }
-
+  
   weight_y.head(v.size())=v(0)*v.cwiseInverse();
   for(int j=v.size(); j<weight_y.size(); j++)
   {
     weight_y(j)=weight_y(v.size()-1);
   }
-
+  
   for(int i=0; i<kappa_set.size(); i++)
   {
     List tmp_list(weight_y.size());
@@ -572,13 +448,13 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
   }
   MatrixXd J0=as<List>(x_params(4))(0), J2=as<List>(x_params(4))(1);
   MatrixXd J00=as<List>(x_params(7))(0), J20=as<List>(x_params(7))(1), J11=as<List>(x_params(7))(2), J02=as<List>(x_params(7))(3);
-
-
+  
+  
   MatrixXd Z=as<MatrixXd>(fit_cv_fix_effects["opt_z"]);
   VectorXd max_value=as<VectorXd>(fit_cv_fix_effects["opt_max_value"]);
   max_value=max_value/max_value.maxCoeff();
   int  n_main_basis=(as<VectorXd>(x_params(5)))(0), n_inter_basis=(as<VectorXd>(x_params(5)))(1);
-
+  
   if(n_main+n_inter>1)
   {
     MatrixXd tmp=Z.topRows(n_main_basis);
@@ -602,7 +478,7 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
     tmp=Z.topRows(n_main_basis);
     tmp_3=((tmp.transpose()*(J2*tmp)).diagonal()).cwiseAbs();
     a0=max_value.dot(tmp_3);
-
+    
     for(int k=1; k<n_main; k++)
     {
       tmp=Z.block(k*n_main_basis, 0, n_main_basis, Z.cols());
@@ -627,16 +503,69 @@ List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_
       tmp_3=((tmp.transpose()*(J02*tmp)).diagonal()).cwiseAbs();
       w1(k,3)=a0/(max_value.dot(tmp_3)+a0*1e-6);
     }
-
+    
     weight_list(0)=w0;
     weight_list(1)=w1;
   }
   Rcout << "**CV procedure for adaptive fitting**"  << std::endl;
-
+  
   fit_cv_fix_effects=cv_over_tau(list_for_G_Pi, weight_list, x_params,  y_penalty_inv, y_params, all_folds, main_index,  inter_index, upper_comp, thresh);
-
+  
   return  List::create(_["fit_cv_fix_effects"]=fit_cv_fix_effects, _["y_penalty_inv"]=y_penalty_inv);
+  
+}
 
+
+/////////////////////////////////////////////////////
+// [[Rcpp::export]]
+List C_cv_fix_effects(List t_x, List X, Eigen::MatrixXd Y, Eigen::VectorXi main_index, Eigen::VectorXi inter_index,    List x_params, List y_params, List all_folds, int upper_comp, double thresh)
+{
+  int n_main=main_index.sum(), n_inter=inter_index.sum();
+  List list_for_G_Pi=calculate_G_and_Y(t_x,  X, Y, x_params, all_folds);
+  List weight_list(2);
+  weight_list(0)=MatrixXd::Constant(n_main, 2, 1);
+  weight_list(1)=MatrixXd::Constant(n_inter, 4, 1);
+  VectorXd weight_y=MatrixXd::Constant(upper_comp+1,1,1);
+  
+  MatrixXd A=as<MatrixXd>(as<List>(y_params(6))(0)), B=as<MatrixXd>(as<List>(y_params(6))(1));
+  VectorXd kappa_set=as<VectorXd>(y_params(1));
+  List y_penalty_inv(kappa_set.size());
+  for(int i=0; i<kappa_set.size(); i++)
+  {
+    List tmp_list(weight_y.size());
+    double kappa=kappa_set(i);
+    for(int j=0; j<weight_y.size(); j++)
+    {
+      tmp_list(j)=(A + kappa*weight_y(j)*B).inverse();
+    }
+    y_penalty_inv(i)=tmp_list;
+  }
+  Rcout << "**CV procedure for nonadaptive fitting**"  << std::endl;
+  Rcout << "**(used to determine the adaptive constants)**"  << std::endl;
+  
+  List fit_cv_fix_effects=cv_over_tau(list_for_G_Pi, weight_list, x_params,  y_penalty_inv, y_params, all_folds, main_index,  inter_index, upper_comp, thresh);
+  MatrixXd T=fit_cv_fix_effects["opt_T"];
+  MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5)), K=as<MatrixXd>(y_params(4));
+  for(int i=0; i<T.cols(); i++)
+  {
+    T.col(i)=T.col(i)/T.col(i).norm();
+  }
+  MatrixXd t_train_mtx(T.rows(), T.cols()+1);
+  t_train_mtx.col(0)=MatrixXd::Constant(T.rows(),1, 1/sqrt(T.rows()));
+  t_train_mtx.rightCols(T.cols())=T;
+  
+  MatrixXd coef_w_0=B_vals_weig*Y.transpose()*t_train_mtx, coef_w;
+  VectorXd  v(coef_w_0.cols());
+  int kappa_index=fit_cv_fix_effects["opt_kappa_index"];
+  for(int ncomp=0;ncomp<v.size();ncomp++)
+  {
+    VectorXd tmp=as<MatrixXd>(as<List>(y_penalty_inv(kappa_index))(ncomp))*coef_w_0.col(ncomp);
+    v(ncomp)=tmp.dot(K*tmp);
+  }
+  
+  
+  return  List::create(_["fit_cv_fix_effects"]=fit_cv_fix_effects, _["y_penalty_inv"]=y_penalty_inv);
+  
 }
 
 
@@ -654,15 +583,15 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
   VectorXd tau_set=as<VectorXd>(x_params(8));
   VectorXi main_effect=extract(main_all, main_index), inter_effect=extract(inter_all, inter_index);
   int n_main_basis=as<VectorXd>(x_params(5))(0), n_inter_basis=as<VectorXd>(x_params(5))(1);
-
-
+  
+  
   int nsample=x_params(2);
   ///conduct cross-validation
-
+  
   int K_cv=all_folds.size();
   VectorXd kappa_set=as<VectorXd>(y_params(1));
   int kappa_index=fit_cv_fix_effects["opt_kappa_index"];
-
+  
   MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5));
   MatrixXd Y_train, Y_valid, tmp_mat, G_valid, R_inv_tran_G_valid, T_train, T_valid;
   int i_tau=fit_cv_fix_effects["opt_tau_index"];
@@ -670,7 +599,7 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
   double error=0;
   MatrixXd G_ini(n_main*n_main_basis+n_inter*n_inter_basis, nsample);
   Map<MatrixXd> G=Map<MatrixXd>(G_ini.data(), G_ini.rows(), nsample);
-
+  
   for(int i=0; i<n_main; i++)
   {
     G.block(i*n_main_basis, 0, n_main_basis, nsample)=as<MatrixXd>(as<List>(list_for_G_Pi["G_main_list"])(main_effect(i)));
@@ -679,7 +608,7 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
   {
     G.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, nsample)=as<MatrixXd>(as<List>(list_for_G_Pi["G_inter_list"])(inter_effect(i)));
   }
-
+  
   double tau=tau_set(i_tau);
   MatrixXd R_inv_tran_G=cal_R_trans_inv(G, weight_list, x_params, n_main, n_inter, tau);
   ///calculate the maximum numbers of components
@@ -688,7 +617,7 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
     MatrixXd Y_train=as<MatrixXd>(as<List>(list_for_G_Pi["Y_train_list"])(fold_ind));
     MatrixXd Y_valid=as<MatrixXd>(as<List>(list_for_G_Pi["Y_valid_list"])(fold_ind));
     MatrixXd Pi=as<MatrixXd>(as<List>(list_for_G_Pi["Pi_train_list"])(fold_ind));
-
+    
     VectorXi omit=as<VectorXi>(all_folds(fold_ind)).array()-1;
     int nsample_train=nsample-omit.size();
     MatrixXd R_inv_tran_G_valid(R_inv_tran_G.rows(), omit.size());
@@ -698,7 +627,7 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
     {
       ind(omit(i))=1;
       R_inv_tran_G_valid.col(i)=R_inv_tran_G.col(omit(i));
-
+      
     }
     int i_train=0;
     for(int i=0; i<nsample; i++)
@@ -709,23 +638,24 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
         i_train=i_train+1;
       }
     }
-    R_inv_tran_G_train=(R_inv_tran_G_train.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
     R_inv_tran_G_valid=(R_inv_tran_G_valid.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
-
+    R_inv_tran_G_train=(R_inv_tran_G_train.colwise()-R_inv_tran_G_train.rowwise().mean())*sqrt(nsample)/sqrt(nsample_train);
+    
+    
     double lambda=fit_cv_fix_effects["opt_lambda"];
-
+    
     MatrixXd M(nsample_train+R_inv_tran_G_train.rows(), nsample_train);
     Map<MatrixXd> M_basis=Map<MatrixXd>(M.data(), M.rows(), M.cols());
     M_basis.topRows(nsample_train)=sqrt(lambda)*(MatrixXd::Identity(nsample_train, nsample_train));
     M_basis.bottomRows(R_inv_tran_G_train.rows())=-R_inv_tran_G_train;
-
+    
     Map<MatrixXd> Pi_eig=Map<MatrixXd>(Pi.data(), Pi.rows(), Pi.cols());
     List fit=cal_comp_with_max(Pi_eig, M_basis, opt_K);
-
+    
     MatrixXd beta=as<MatrixXd>(fit["beta"]);
     MatrixXd T_train=beta.topRows(nsample_train);
     MatrixXd T_valid=pow(lambda, -0.5)*R_inv_tran_G_valid.transpose()*beta.bottomRows(beta.rows()-nsample_train);
-
+    
     int ncol=T_train.cols();
     for(int i=0; i<ncol; i++)
     {
@@ -739,18 +669,18 @@ double cv_with_fixed_params(List list_for_G_Pi, List fit_cv_fix_effects, List we
     MatrixXd t_valid_mtx(T_valid.rows(), ncol+1);
     t_valid_mtx.col(0)=MatrixXd::Constant(T_valid.rows(),1, 1/sqrt(T_train.rows()));
     t_valid_mtx.rightCols(ncol)=T_valid;
-
-
+    
+    
     MatrixXd coef_w_0=B_vals_weig*Y_train.transpose()*t_train_mtx, coef_w;
     MatrixXd  V(coef_w_0.cols(), B_vals.cols()), Y_pred;
-
-
+    
+    
     for(int ncomp=0;ncomp<V.rows();ncomp++)
     {
       VectorXd tmp=as<MatrixXd>(as<List>(y_penalty_inv(kappa_index))(ncomp))*coef_w_0.col(ncomp);
       V.row(ncomp)=tmp.transpose()*B_vals;
     }
-
+    
     Y_pred=t_valid_mtx*V;
     error=error+(Y_pred-Y_valid).squaredNorm()/Y_valid.cols();
   }
@@ -771,13 +701,15 @@ Eigen::MatrixXd C_pred_ff_inter(List fit_cv, Eigen::MatrixXd Y_train, List X_tes
   VectorXi main_all=VectorXi::LinSpaced(n_curves,0,n_curves-1), inter_all=VectorXi::LinSpaced(inter_mat.rows(), 0, inter_mat.rows()-1);
   VectorXd tau_set=as<VectorXd>(x_params(8));
   VectorXi main_effect=extract(main_all, main_index), inter_effect=extract(inter_all, inter_index);
-
-
+  
+  
   int n_main_basis=as<VectorXi>(x_params(5))(0), n_inter_basis=as<VectorXi>(x_params(5))(1);
   int nsample=x_params(2);
   List B_main_vals=x_params(3), B_inter_vals=x_params(6);
   MatrixXd G_test(n_main*n_main_basis+n_inter*n_inter_basis, n_test);
   MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5));
+  MatrixXd B_vals_new=as<MatrixXd>(y_params(7));
+  
   for(int i=0; i<n_main; i++)
   {
     MatrixXd tmp_mat=as<MatrixXd>(X_test(main_effect(i))).transpose();
@@ -817,15 +749,13 @@ Eigen::MatrixXd C_pred_ff_inter(List fit_cv, Eigen::MatrixXd Y_train, List X_tes
   t_test_mtx.col(0)=MatrixXd::Constant(T_test.rows(),1, 1/sqrt(T.rows()));
   t_test_mtx.rightCols(ncol)=T_test;
   MatrixXd coef_w_0=B_vals_weig*Y_train.transpose()*t_train_mtx, coef_w;
-  MatrixXd  V(coef_w_0.cols(), B_vals.cols()), Y_pred;
-
-
+  MatrixXd  V(coef_w_0.cols(), B_vals_new.cols()), Y_pred;
+  
   for(int ncomp=0;ncomp<V.rows();ncomp++)
   {
     MatrixXd tmp=as<MatrixXd>(as<List>(y_penalty_inv(kappa_index))(ncomp))*coef_w_0.col(ncomp);
-    V.row(ncomp)=tmp.transpose()*B_vals;
+    V.row(ncomp)=tmp.transpose()*B_vals_new;
   }
-
   Y_pred=t_test_mtx*V;
   return Y_pred;
 }
@@ -838,31 +768,31 @@ Eigen::MatrixXd C_pred_ff_inter(List fit_cv, Eigen::MatrixXd Y_train, List X_tes
 // [[Rcpp::export]]
 List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw, List x_params, List y_params, List all_folds, int upper_comp, double thresh)
 {
-
+  
   int n_curves=X.size(),  n_all_main=n_curves;
   List list_for_G_Pi=calculate_G_and_Y(t_x,  X, Y, x_params_raw, all_folds);
   MatrixXi inter_mat=as<MatrixXi>(list_for_G_Pi(0));
   int n_all_inter=inter_mat.rows();
   VectorXd tau_set=as<VectorXd>(x_params(8));
   VectorXi main_all=VectorXi::LinSpaced(n_curves,0,n_curves-1), inter_all=VectorXi::LinSpaced(inter_mat.rows(), 0, inter_mat.rows()-1);
-
+  
   ///////start the cv procedure
-
-
+  
+  
   int total_n_models=20;
-
+  
   MatrixXi main_index_saved=MatrixXi::Zero(n_all_main, total_n_models), inter_index_saved=MatrixXi::Zero(n_all_inter,total_n_models);
   VectorXd cv_error_saved(total_n_models);
-
+  
   double min_cv_error=1e20;
   List fit_cv_fix_effects, fit_opt_effects;
   int count=0;
   VectorXi main_index=VectorXi::Constant(n_all_main,1), inter_index=VectorXi::Zero(n_all_inter);
   VectorXi opt_main_index, opt_inter_index;
   VectorXd  SSR_1=VectorXd::Zero(n_all_main), SSR_2=VectorXd::Zero(n_all_inter);
-
+  
   VectorXd weight_y=VectorXd::Constant(upper_comp+1, 1);
-
+  
   MatrixXd A=as<MatrixXd>(as<List>(y_params(6))(0)), B=as<MatrixXd>(as<List>(y_params(6))(1));
   VectorXd kappa_set=as<VectorXd>(y_params(1));
   List y_penalty_inv(kappa_set.size());
@@ -881,15 +811,15 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
     Rcout << "################################################################## "  << std::endl;
     Rcout << "Step " <<" " <<  count+1 << std::endl;
     Rcout << "** CV procedure for calculation of CV error** "  << std::endl;
-
+    
     int n_main=main_index.sum(), n_inter=inter_index.sum();
-
+    
     List weight_list(2);
     weight_list(0)=MatrixXd::Constant(n_main, 2, 1);
     weight_list(1)=MatrixXd::Constant(n_inter, 4, 1);
-
+    
     fit_cv_fix_effects=cv_over_tau(list_for_G_Pi, weight_list, x_params_raw,  y_penalty_inv, y_params, all_folds, main_index,  inter_index, upper_comp, thresh);
-
+    
     double current_cv_error=fit_cv_fix_effects["min_error"];
     main_index_saved.col(count)=main_index;
     inter_index_saved.col(count)=inter_index;
@@ -909,7 +839,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
     }
     Rcout << "** determine effects added or removed from the current model ** "  << std::endl;
     //determine next model
-
+    
     VectorXi tmp_main_index=main_index;
     for(int i_main=0; i_main<n_all_main; i_main++)
     {
@@ -949,7 +879,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
       }
       tmp_main_index=main_index;
     }
-
+    
     VectorXi tmp_inter_index=inter_index;
     for(int i_inter=0; i_inter<n_all_inter; i_inter++)
     {
@@ -989,14 +919,14 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
       }
       tmp_inter_index=inter_index;
     }
-
+    
     VectorXd::Index min_Ind_1, min_Ind_2;
     double min_value_1=SSR_1.minCoeff(&min_Ind_1), min_value_2=SSR_2.minCoeff(&min_Ind_2);
     if((min_value_1>9e19)&&(min_value_2>9e19))
     {
       break;
     }
-
+    
     if(min_value_1<min_value_2)
     {
       main_index(min_Ind_1)=1-main_index(min_Ind_1);
@@ -1036,7 +966,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
           i_select=i_select+1;
         }
       }
-      Rcout << "the interaction effecs after this step==" << std::endl;
+      Rcout << "the interaction effecs after this step" << std::endl;
       for(int j=0;j<selected_inter.size(); j++)
       {
         Rcout<< "("<<inter_mat(selected_inter(j),0)+1<<","<<inter_mat(selected_inter(j),1)+1<<")"<<std::endl;
@@ -1060,7 +990,7 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
         i_select=i_select+1;
       }
     }
-    Rcout << "finally selected main effecs=" <<" " << selected_main.transpose()  << std::endl;
+    Rcout << "finally selected main effecs" <<" " << selected_main.transpose()  << std::endl;
   }
   else
   {
@@ -1089,12 +1019,9 @@ List C_stepwise_adaptive(List t_x,  List X, Eigen::MatrixXd Y, List x_params_raw
     Rcout << "finally selected interation effecs is empty!" << std::endl;
   }
   Rcout << "################################################################## "  << std::endl;
-
-
-
-
+  
+  
   return  List::create(_["opt_main_index"]=opt_main_index, _["opt_inter_index"]=opt_inter_index, _["inter_mat"]=inter_mat);
-
 }
 
 /////////////////////////////////////////
@@ -1115,7 +1042,10 @@ List C_find_coef_ff_interaction(List fit_cv, List X_train, Eigen::MatrixXd Y_tra
   int n_main_basis=as<VectorXi>(x_params(5))(0), n_inter_basis=as<VectorXi>(x_params(5))(1);
   int nsample=x_params(2);
   List B_main_vals=x_params(3), B_inter_vals=x_params(6);
+  List B_main_vals_new=x_params(10), B_inter_vals_new=x_params(11);
   MatrixXd B_vals= as<MatrixXd>(y_params(3)), B_vals_weig=as<MatrixXd>(y_params(5));
+  MatrixXd B_vals_new=as<MatrixXd>(y_params(7));
+  
   int ncol=T.cols();
   MatrixXd scale_factor=MatrixXd::Identity(ncol, ncol);
   for(int i=0; i<ncol; i++)
@@ -1127,50 +1057,54 @@ List C_find_coef_ff_interaction(List fit_cv, List X_train, Eigen::MatrixXd Y_tra
   t_train_mtx.col(0)=MatrixXd::Constant(T.rows(),1, 1/sqrt(T.rows()));
   t_train_mtx.rightCols(ncol)=T;
   MatrixXd coef_w_0=B_vals_weig*Y_train.transpose()*t_train_mtx, coef_w;
-  MatrixXd  V(coef_w_0.cols(), B_vals.cols());
+  MatrixXd  V(coef_w_0.cols(), B_vals_new.cols());  // (#components+1)*(length of t.y.coef)
   for(int ncomp=0;ncomp<V.rows();ncomp++)
   {
     MatrixXd tmp=as<MatrixXd>(as<List>(y_penalty_inv(kappa_index))(ncomp))*coef_w_0.col(ncomp);
-    V.row(ncomp)=tmp.transpose()*B_vals;
+    V.row(ncomp)=tmp.transpose()*B_vals_new;
   }
+  
   VectorXd intercept=(V.row(0)/sqrt(T.rows()));
   MatrixXd W=z*scale_factor*V.bottomRows(V.rows()-1)/sqrt(nsample);
   List coef_main(n_main);
   for(int i=0; i<n_main; i++)
   {
-    MatrixXd tmp_1=(as<MatrixXd>(B_main_vals(main_effect(i)))).transpose()*W.block(i*n_main_basis, 0, n_main_basis, W.cols());
-    coef_main(i)=tmp_1;
-    intercept=intercept-tmp_1.transpose()*(as<MatrixXd>(X_train(main_effect(i)))).colwise().mean().transpose()/tmp_1.rows();
+    MatrixXd tmp_old=(as<MatrixXd>(B_main_vals(main_effect(i)))).transpose()*W.block(i*n_main_basis, 0, n_main_basis, W.cols()); //S*Tnew
+    MatrixXd tmp_new=(as<MatrixXd>(B_main_vals_new(main_effect(i)))).transpose()*W.block(i*n_main_basis, 0, n_main_basis, W.cols()); //Snew*Tnew
+    coef_main(i)=tmp_new;
+    intercept=intercept-tmp_old.transpose()*(as<MatrixXd>(X_train(main_effect(i)))).colwise().mean().transpose()/tmp_old.rows();
   }
   List coef_inter(n_inter);
   for(int i=0; i<n_inter; i++)
   {
-    MatrixXd tmp_1=as<MatrixXd>(B_inter_vals(inter_mat(inter_effect(i),0)));
-    MatrixXd tmp_2=as<MatrixXd>(B_inter_vals(inter_mat(inter_effect(i),1)));
-    List inter_effects_list(W.cols());
-    MatrixXd W_tmp=W.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, W.cols());
+    MatrixXd tmp_old1=as<MatrixXd>(B_inter_vals(inter_mat(inter_effect(i),0))); //Ls*S1
+    MatrixXd tmp_old2=as<MatrixXd>(B_inter_vals(inter_mat(inter_effect(i),1))); //Ls*S2
+    MatrixXd tmp_new1=as<MatrixXd>(B_inter_vals_new(inter_mat(inter_effect(i),0))); //Ls*S1new
+    MatrixXd tmp_new2=as<MatrixXd>(B_inter_vals_new(inter_mat(inter_effect(i),1))); //Ls*S2new
+    List inter_effects_list(W.cols()); //Tnew
+    MatrixXd W_tmp=W.block(n_main_basis*n_main+i*n_inter_basis, 0, n_inter_basis, W.cols()); //Lt*Tnew
     for(int t=0; t<W.cols(); t++)
     {
       VectorXd W_row_vec=W_tmp.col(t);
-      Map<MatrixXd> tmp_W(W_row_vec.data(), tmp_2.rows(), tmp_1.rows());
-      MatrixXd tmp_coef=tmp_1.transpose()*tmp_W.transpose()*tmp_2;
-      inter_effects_list(t)=tmp_coef;
-      MatrixXd tmp_3=(as<MatrixXd>(X_train(inter_mat(inter_effect(i),0)))*tmp_coef).cwiseProduct(as<MatrixXd>(X_train(inter_mat(inter_effect(i),1))))/tmp_coef.rows()/tmp_coef.cols();
+      Map<MatrixXd> tmp_W(W_row_vec.data(), tmp_old2.rows(), tmp_old1.rows()); //Ls2*Ls1  ?
+      MatrixXd tmp_coef_old=tmp_old1.transpose()*tmp_W.transpose()*tmp_old2;//S1*S2
+      MatrixXd tmp_coef_new=tmp_new1.transpose()*tmp_W.transpose()*tmp_new2;//S1new*S2new
+      inter_effects_list(t)=tmp_coef_new;
+      MatrixXd tmp_3=(as<MatrixXd>(X_train(inter_mat(inter_effect(i),0)))*tmp_coef_old).cwiseProduct(as<MatrixXd>(X_train(inter_mat(inter_effect(i),1))))/tmp_coef_old.rows()/tmp_coef_old.cols();
       intercept(t)=intercept(t)-tmp_3.rowwise().sum().mean();
     }
-
     coef_inter(i)=inter_effects_list;
   }
-
+  
   MatrixXi inter_effects(inter_effect.size(),inter_mat.cols());
   for(int i=0; i<inter_effects.rows(); i++)
   {
     inter_effects.row(i)=inter_mat.row(inter_effect(i));
   }
-
-  return  List::create(_["intercept"]=intercept, _["coef_main"]=coef_main, _["coef_inter"]=coef_inter,
-                       _["main_effects"]=main_effect, _["inter_effects"]=inter_effects);
-
+  
+  return  List::create(_["intercept"]=intercept,_["main_effects"]=main_effect, _["coef_main"]=coef_main,
+                       _["inter_effects"]=inter_effects, _["coef_inter"]=coef_inter);
+  
 }
 
 ///////////////////////////////////////////////////////////////////////
